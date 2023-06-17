@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>University of Phoenix Live Chat</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script type="text/javascript" charset="utf-8">
+(function (g, e, n, es, ys) {
+g['_genesysJs'] = e;
+g[e] = g[e] || function () {
+(g[e].q = g[e].q || []).push(arguments)
+};
+g[e].t = 1 * new Date();
+g[e].c = es;
+ys = document.createElement('script'); ys.async = 1; ys.src = n; ys.charset = 'utf-8'; document.head.appendChild(ys);
+})(window, 'Genesys', 'https://apps.usw2.pure.cloud/genesys-bootstrap/genesys.min.js', {
+environment: 'prod-usw2',
+deploymentId: 'b4d3fb1c-35b4-4a4c-a2f9-518b30a5999f'
+});
+
+Genesys("command", "Database.set", {
+messaging: {
+customAttributes: {
+"context.firstName": "StudentFName",
+"context.lastName": "StudentLName",
+"context.email": shubham.singhania@phoenix.edu
+
+}
+}
+});
+
+</script>
+
+<script type="text/javascript">
+function toggleMessenger(){
+Genesys("command", "Messenger.open", {},
+function(o){}, // if resolved
+function(o){ // if rejected
+Genesys("command", "Messenger.close");
+}
+);
+}
+</script>
+</head>
+<body>
+
+<input type="text" name="formatedAddress" id="formatedAddress" value="" />
+<button type="button" id="custom-launcher" onclick="toggleMessenger()">
+Messenger
+</button>
+
+</body>
+</html>
