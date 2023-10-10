@@ -32,6 +32,8 @@
       const platformClient = require('platformClient');
       const client = platformClient.ApiClient.instance;
       const usersApi = new platformClient.UsersApi();
+      const apiInstance = new platformClient.ConversationsApi();
+      let body = {}; // Object | Call request
 
       // Configure Client App
       let ClientApp = window.purecloud.apps.ClientApp;
@@ -45,17 +47,14 @@
       client.setEnvironment(environment);
 
       return client.loginImplicitGrant(clientId, redirectUri)
-
-
-        .then(data =>  usersApi.getUsersMe())
+        .then(data =>  apiInstance.postConversationsCalls(body))
         .then(data => {
-          userDetails = data;
-
-          myClientApp.alerting.showToastPopup(
-            `Hi ${userDetails.name}`, 
-            'Never gonna give you up, never gonna let you down 😊');
-        })
-        .catch(err => console.log(err));
+          console.log(`postConversationsCalls success! data: ${JSON.stringify(data, null, 2)}`);
+          })
+          .catch((err) => {
+            console.log('There was a failure calling postConversationsCalls');
+            console.error(err);
+          });
 
     }
 
