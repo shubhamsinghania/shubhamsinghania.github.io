@@ -182,7 +182,7 @@ function checkWorkflow() {
       checkWorkflow();             
     }                       
   }, 3000)
-
+}
 
 function alertFailure(message) {
   var options = {
