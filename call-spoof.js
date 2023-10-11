@@ -1,8 +1,7 @@
 const platformClient = require("platformClient");
 const clientApp = window.purecloud.apps.ClientApp;
-const clientId = "30204980-0284-445a-a11e-12a62fccffcf";
-const redirectUri =
-  "https://d346r3blpzr5b3.cloudfront.net/call-spoof/index.htm";
+const clientId = "37a8339d-90e6-441d-9cb1-06d3baa257e8";
+const redirectUri = "https://shubhamsinghania.github.io";
 const client = platformClient.ApiClient.instance;
 var conversationsApi = new platformClient.ConversationsApi();
 var notificationsApi = new platformClient.NotificationsApi();
