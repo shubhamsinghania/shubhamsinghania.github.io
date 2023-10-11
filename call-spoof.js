@@ -96,7 +96,7 @@ async function getUserId() {
   });
 }
 
-async function placeCall() {
+function placeCall() {
   remoteNumber = $("input[name=remoteNumber]").val();
   conversationHandled = false;
 
@@ -120,7 +120,7 @@ async function placeCall() {
     options
   );
 
-  conversationId = await createConversation();
+  conversationId = createConversation();
 }
 
 function callWorkflow() {
@@ -230,13 +230,12 @@ function getParameterByName(name) {
 
 // Section: Conversation control
 
-async function createConversation() {
+function createConversation() {
   var body = {
 		phoneNumber:remoteNumber,
 		callFromQueueId:"19fe3246-f90d-4381-b048-c9884bef1c8f"
   };
 
-  return new Promise((resolve, reject) => {
     conversationsApi
       .postConversationsCalls(body)
       .then((data) => {
@@ -248,5 +247,4 @@ async function createConversation() {
         console.log("[CallSpoof] Unable to create conversation", err);
         reject(err);
       });
-  });
 }
