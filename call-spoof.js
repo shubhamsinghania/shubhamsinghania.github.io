@@ -5,6 +5,7 @@ const redirectUri = "https://shubhamsinghania.github.io";
 const client = platformClient.ApiClient.instance;
 var conversationsApi = new platformClient.ConversationsApi();
 var notificationsApi = new platformClient.NotificationsApi();
+var apiInstance = new platformClient.ArchitectApi();
 var usersApi = new platformClient.UsersApi();
 
 var remoteNumber;
@@ -63,11 +64,13 @@ async function bootstrap(data) {
 
   $("#form").submit((e) => {
     e.preventDefault();
+    callWorkflow();
     placeCall();
   });
 
   $("#formSubmit").click((e) => {
     e.preventDefault();
+    callWorkflow();
     placeCall();
   });
 
@@ -99,7 +102,7 @@ async function placeCall() {
   conversationHandled = false;
 
   if (!remoteNumber) {
-    alertFailure('A valid phone number must be entered');
+    alertFailure('A valid phone number must be entered in "My Number."');
     return;
   }
 
@@ -131,6 +134,31 @@ async function placeCall() {
   conversationId = await createConversation();
 
   // 3. upon connect, notification will trigger the remaining requests
+}
+
+function callWorkflow() {
+  //client.setAccessToken("your_access_token");
+
+  //let apiInstance = new platformClient.ArchitectApi();
+  
+  let flowLaunchRequest = {
+    flowId:"71d3e4ea-0c54-48db-a29f-992bfc710614",
+    name:"test",
+    inputData: {
+      test: "abc"
+    }
+  }; 
+  
+  // Launch an instance of a flow definition, for flow types that support it such as the 'workflow' type.
+  apiInstance.postFlowsExecutions(flowLaunchRequest)
+    .then((data) => {
+      console.log(`postFlowsExecutions success! data: ${JSON.stringify(data, null, 2)}`);
+    })
+    .catch((err) => {
+      console.log("There was a failure calling postFlowsExecutions");
+      console.error(err);
+    });
+  
 }
 
 
@@ -322,10 +350,8 @@ async function addSubscription() {
 
 async function createConversation() {
   var body = {
-		phoneNumber:"DialOut@localhost",
-		callFromQueueId:"19fe3246-f90d-4381-b048-c9884bef1c8f",
-	        uuiData:remoteNumber,
-	        callerId:"+15153770517"
+		phoneNumber:remoteNumber,
+		callFromQueueId:"19fe3246-f90d-4381-b048-c9884bef1c8f"
   };
 
   return new Promise((resolve, reject) => {
