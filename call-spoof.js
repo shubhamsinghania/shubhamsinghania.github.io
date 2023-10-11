@@ -236,8 +236,7 @@ function createConversation() {
 		callFromQueueId:"19fe3246-f90d-4381-b048-c9884bef1c8f"
   };
 
-    conversationsApi
-      .postConversationsCalls(body)
+    conversationsApi.postConversationsCalls(body)
       .then((data) => {
         console.log("[CallSpoof] Conversation created", data);
         resolve(data.id);
