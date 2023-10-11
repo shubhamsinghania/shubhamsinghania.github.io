@@ -99,7 +99,7 @@ async function placeCall() {
   conversationHandled = false;
 
   if (!remoteNumber) {
-    alertFailure('A valid phone number must be entered in "My Number."');
+    alertFailure('A valid phone number must be entered');
     return;
   }
 
