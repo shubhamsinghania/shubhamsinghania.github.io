@@ -237,11 +237,9 @@ function createConversation() {
     conversationsApi.postConversationsCalls(body)
       .then((data) => {
         console.log("[CallSpoof] Conversation created", data);
-        resolve(data.id);
       })
       .catch((err) => {
         alertFailure("Unable to create the conversation.");
         console.log("[CallSpoof] Unable to create conversation", err);
-        reject(err);
       });
 }
