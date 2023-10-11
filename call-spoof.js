@@ -271,7 +271,7 @@ async function handleMessage(event) {
   }
 
   // check if participants exist
-  if (!data.eventBody.participants && data.eventBody.participants.length > 1) {
+  if (!data.eventBody.participants) {
     console.log(
       "[CallSpoof] Ignored notification due to missing conversation participants",
       data
@@ -279,27 +279,10 @@ async function handleMessage(event) {
     return;
   }
 
-  // verify all parties connected
-  var allConnected = true;
-  data.eventBody.participants.forEach((participant) => {
-    if (participant.state.toLowerCase() !== "connected") {
-      allConnected = false;
-    }
-  });
-
-  if (!allConnected) {
-    console.log(
-      "[CallSpoof] Ignored notification due to not all participants being connected yet",
-      data
-    );
-    return;
-  }
 
   // if we got here, that means we should proceed and ignore future notifications.
   participantId0 = data.eventBody.participants[0].id;
-  participantId1 = data.eventBody.participants[1].id;
   conversationHandled = true;
-
   await disconnectWebsocket();
   await setAttributes();
 
