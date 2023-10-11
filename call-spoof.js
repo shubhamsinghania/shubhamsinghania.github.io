@@ -340,7 +340,8 @@ async function addSubscription() {
 async function createConversation() {
   var body = {
 		phoneNumber:"DialOut@localhost",
-		callFromQueueId:"19fe3246-f90d-4381-b048-c9884bef1c8f"
+		callFromQueueId:"19fe3246-f90d-4381-b048-c9884bef1c8f",
+	        uuiData:"test"  
   };
 
   return new Promise((resolve, reject) => {
