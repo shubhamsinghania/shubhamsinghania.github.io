@@ -59,8 +59,6 @@ async function bootstrap(data) {
     //pcEnvironmentQueryParam: "environment",
   });
 
-  listTimeZones();
-
   userId = await getUserId();
 
   $("#form").submit((e) => {
