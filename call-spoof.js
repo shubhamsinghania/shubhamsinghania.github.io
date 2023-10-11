@@ -369,7 +369,7 @@ async function setAttributes() {
     conversationsApi
       .patchConversationParticipantAttributes(
         conversationId,
-        participantId1,
+        participantId0,
         body
       )
       .then((data) => {
