@@ -56,7 +56,7 @@ async function bootstrap(data) {
 
   // set up client app
   callSpoofApp = new clientApp({
-    //pcEnvironmentQueryParam: "environment",
+    pcEnvironmentQueryParam: "environment",
   });
 
   userId = await getUserId();
