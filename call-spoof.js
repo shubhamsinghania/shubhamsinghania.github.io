@@ -145,7 +145,7 @@ function callWorkflow() {
     flowId:"71d3e4ea-0c54-48db-a29f-992bfc710614",
     name:"test",
     inputData: {
-      test: "abc"
+      Flow.InputVariable: "abc"
     }
   }; 
   
