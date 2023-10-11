@@ -5,13 +5,11 @@ const redirectUri = "https://shubhamsinghania.github.io";
 const client = platformClient.ApiClient.instance;
 var conversationsApi = new platformClient.ConversationsApi();
 var apiInstance = new platformClient.ArchitectApi();
-var usersApi = new platformClient.UsersApi();
 
 var remoteNumber;
 var i=1;
 var callSpoofApp,
   environment,
-  userId,
   executionId,
   executionStatus;
 
@@ -56,19 +54,18 @@ async function bootstrap(data) {
     pcEnvironmentQueryParam: "environment",
   });
 
-  userId = await getUserId();
 
   $("#form").submit((e) => {
     e.preventDefault();
-    callWorkflow();
-    checkWorkflow();
+    await callWorkflow();
+    await checkWorkflow();
     placeCall();
   });
 
   $("#formSubmit").click((e) => {
     e.preventDefault();
-    callWorkflow();
-    checkWorkflow();
+    await callWorkflow();
+    await checkWorkflow();
     placeCall();
   });
 
@@ -77,23 +74,6 @@ async function bootstrap(data) {
   $("#loading").addClass("hidden");
 }
 
-// Section: Helpers
-
-async function getUserId() {
-  return new Promise((resolve, reject) => {
-    usersApi
-      .getUsersMe()
-      .then((data) => {
-        resolve(data.id);
-      })
-      .catch((err) => {
-        // not logged in!
-        console.log("[CallSpoof] Unable to get current user", err);
-        bootstrapError();
-        reject(err);
-      });
-  });
-}
 
 function placeCall() {
   remoteNumber = $("input[name=remoteNumber]").val();
@@ -121,7 +101,7 @@ function placeCall() {
   createConversation();
 }
 
-function callWorkflow() {
+async function callWorkflow() {
   //client.setAccessToken("your_access_token");
 
   //let apiInstance = new platformClient.ArchitectApi();
@@ -135,51 +115,36 @@ function callWorkflow() {
   }; 
   
   // Launch an instance of a flow definition, for flow types that support it such as the 'workflow' type.
-  apiInstance.postFlowsExecutions(flowLaunchRequest)
-    .then((data) => {
-      console.log(`postFlowsExecutions success! data: ${JSON.stringify(data, null, 2)}`);
-      executionId = data.id;
-    })
-    .catch((err) => {
-      console.log("There was a failure calling postFlowsExecutions");
-      console.error(err);
-    });
-  
+  return new Promise((resolve, reject) => {
+    apiInstance.postFlowsExecutions(flowLaunchRequest)
+      .then((data) => {
+        console.log(`postFlowsExecutions success! data: ${JSON.stringify(data, null, 2)}`);
+        executionId = data.id;
+        resolve(data.id);
+      })
+      .catch((err) => {
+        console.log("There was a failure calling postFlowsExecutions");
+        console.error(err);
+        reject(err);
+      });
+    }
 }
 
-function checkWorkflow() {
-  
-  // Launch an instance of a flow definition, for flow types that support it such as the 'workflow' type.
-  apiInstance.getFlowsExecution(executionId)
-  .then((data) => {
-    console.log(`getFlowsExecution success! data: ${JSON.stringify(data, null, 2)}`);
-  })
-  .catch((err) => {
-    console.log("There was a failure calling getFlowsExecution");
-    console.error(err);
-  });
-  
-}
-
-function checkWorkflow() {     
-  setTimeout(function() {   
-    console.log('hello');  
+async function checkWorkflow() {     
+  return new Promise((resolve, reject) => {  
       // Launch an instance of a flow definition, for flow types that support it such as the 'workflow' type.
       apiInstance.getFlowsExecution(executionId)
       .then((data) => {
         console.log(`getFlowsExecution success! data: ${JSON.stringify(data, null, 2)}`);
         executionStatus = data.status;
+        resolve(data.status);
       })
       .catch((err) => {
         console.log("There was a failure calling getFlowsExecution");
         console.error(err);
+        reject(err);
       });
-
-    i++;                    
-    if (i < 3 && executionStatus != "COMPLETED") {           
-      checkWorkflow();             
-    }                       
-  }, 3000)
+    }
 }
 
 function alertFailure(message) {
