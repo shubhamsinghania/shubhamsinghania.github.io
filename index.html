@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <title>Call Spoof</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:400,700"
+      rel="stylesheet"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script src="//code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="luxon.min.js"></script>
+    <script src="https://sdk-cdn.mypurecloud.com/javascript/128.0.0/purecloud-platform-client-v2.min.js"></script>
+    <script src="https://sdk-cdn.mypurecloud.com/client-apps/2.3.0/purecloud-client-app-sdk.js"></script>
+    <script type="text/javascript" src="call-spoof.js"></script>
+  </head>
+  <body>
+    <div id="main-app" class="hidden">
+      <div id="notice">
+        If you are using a WebRTC softphone, enable the
+        <strong>Placing calls with another app?</strong> setting.
+      </div>
+      <form id="form">
+        <div class="form-row padded">
+          <div class="form-row-contents">
+            <label>My Number:</label><input type="tel" name="remoteNumber" />
+          </div>
+        </div>
+        <div class="form-row padded">
+          <div class="form-row-contents">
+            <label>Dialed Number:</label><input type="tel" name="dnis" />
+          </div>
+        </div>
+        <div class="form-row padded">
+          <div class="form-row-contents">
+            <label>Caller ID:</label><input type="tel" name="ani" />
+          </div>
+        </div>
+        <div class="form-row padded">
+          <div class="form-row-contents">
+            <label>UUI Data:</label><input type="text" name="uui" />
+          </div>
+        </div>
+        <div class="form-row padded">
+          <div class="form-row-contents">
+            <label>Date / Time:</label
+            ><input type="datetime-local" name="datetime" />
+          </div>
+        </div>
+        <div class="form-row padded">
+          <div class="form-row-contents">
+            <label>Time Zone:</label
+            ><select name="tz"></select>
+          </div>
+        </div>
+        <div class="centered padded">
+          <button type="submit" id="formSubmit">Place Call</button>
+        </div>
+      </form>
+    </div>
+    <div id="loading" class="centered padded">Loading...</div>
+    <div id="auth-failure" class="centered hidden padded">
+      There was a problem communicating with Genesys Cloud.
+    </div>
+  </body>
+</html>
