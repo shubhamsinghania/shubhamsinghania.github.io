@@ -9,15 +9,12 @@ var apiInstance = new platformClient.ArchitectApi();
 var usersApi = new platformClient.UsersApi();
 
 var remoteNumber;
+var i=1;
 var callSpoofApp,
-  conversationHandled,
   environment,
   userId,
-  conversationId,
-  participantId0,
-  participantId1,
-  channelId,
-  socket;
+  executionId,
+  executionStatus;
 
 // upgrade to https
 if (location.protocol !== "https:") {
@@ -65,12 +62,14 @@ async function bootstrap(data) {
   $("#form").submit((e) => {
     e.preventDefault();
     callWorkflow();
+    checkWorkflow();
     placeCall();
   });
 
   $("#formSubmit").click((e) => {
     e.preventDefault();
     callWorkflow();
+    checkWorkflow();
     placeCall();
   });
 
@@ -108,12 +107,6 @@ async function placeCall() {
 
   debounce();
 
-  if (channelId) {
-    // always create a new websocket since we didn't add long-live logic
-    // the only situation channelId exists here is when a user places multiple calls at once
-    disconnectWebsocket();
-  }
-
   // show alert
   var options = {
     id: "callSpoofNotify",
@@ -127,13 +120,7 @@ async function placeCall() {
     options
   );
 
-  // 1. connect websocket and sub to notifications
-  await connectWebsocket();
-
-  // 2. place call
   conversationId = await createConversation();
-
-  // 3. upon connect, notification will trigger the remaining requests
 }
 
 function callWorkflow() {
@@ -153,6 +140,7 @@ function callWorkflow() {
   apiInstance.postFlowsExecutions(flowLaunchRequest)
     .then((data) => {
       console.log(`postFlowsExecutions success! data: ${JSON.stringify(data, null, 2)}`);
+      executionId = data.id;
     })
     .catch((err) => {
       console.log("There was a failure calling postFlowsExecutions");
@@ -160,6 +148,40 @@ function callWorkflow() {
     });
   
 }
+
+function checkWorkflow() {
+  
+  // Launch an instance of a flow definition, for flow types that support it such as the 'workflow' type.
+  apiInstance.getFlowsExecution(executionId)
+  .then((data) => {
+    console.log(`getFlowsExecution success! data: ${JSON.stringify(data, null, 2)}`);
+  })
+  .catch((err) => {
+    console.log("There was a failure calling getFlowsExecution");
+    console.error(err);
+  });
+  
+}
+
+function checkWorkflow() {     
+  setTimeout(function() {   
+    console.log('hello');  
+      // Launch an instance of a flow definition, for flow types that support it such as the 'workflow' type.
+      apiInstance.getFlowsExecution(executionId)
+      .then((data) => {
+        console.log(`getFlowsExecution success! data: ${JSON.stringify(data, null, 2)}`);
+        executionStatus = data.status;
+      })
+      .catch((err) => {
+        console.log("There was a failure calling getFlowsExecution");
+        console.error(err);
+      });
+
+    i++;                    
+    if (i < 3 && executionStatus != "COMPLETED") {           
+      checkWorkflow();             
+    }                       
+  }, 3000)
 
 
 function alertFailure(message) {
@@ -205,153 +227,15 @@ function getParameterByName(name) {
     : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-// Section: Websocket control
-
-async function connectWebsocket() {
-  return new Promise((resolve, reject) => {
-    notificationsApi
-      .postNotificationsChannels()
-      .then((data) => {
-        channelId = data.id;
-        socket = new WebSocket(data.connectUri);
-        socket.onmessage = handleMessage;
-        socket.onopen = async (event) => {
-          console.log("[CallSpoof] Websocket connected", event);
-          await addSubscription();
-          resolve();
-        };
-        socket.onclose = (event) => {
-          console.log("[CallSpoof] Websocket closed", event);
-        };
-        socket.onerror = (event) => {
-          console.log("[CallSpoof] Websocket error", event);
-        };
-      })
-      .catch((err) => {
-        alertFailure("Unable to connect to Genesys Cloud.");
-        console.log("[CallSpoof] Unable to connect websocket", err);
-        reject(err);
-      });
-  });
-}
-
-async function disconnectWebsocket() {
-  return new Promise((resolve, reject) => {
-    notificationsApi
-      .deleteNotificationsChannelSubscriptions(channelId)
-      .then((data) => {
-        channelId = "";
-        console.log("[CallSpoof] Unsubscribed from notifications");
-        if (socket) {
-          socket.close();
-        }
-        resolve();
-      })
-      .catch((err) => {
-        alertFailure("Unable to connect to Genesys Cloud.");
-        console.log("[CallSpoof] Unable to disconnect websocket", err);
-        reject(err);
-      });
-  });
-}
-
-async function handleMessage(event) {
-  if (conversationHandled === true) {
-    console.log(
-      "[CallSpoof] Ignored notification due to conversation already handled",
-      event
-    );
-    return;
-  }
-
-  if (!event.data) {
-    console.log(
-      "[CallSpoof] Ignored notification due to missing payload",
-      event
-    );
-    return;
-  }
-
-  let data = JSON.parse(event.data);
-  console.log("[CallSpoof] Websocket received message", data);
-
-  // check if correct topic
-  if (data.topicName !== `v2.users.${userId}.conversations.calls`) {
-    console.log("[CallSpoof] Ignored notification for another topic", data);
-    return;
-  }
-
-  // check conversation id
-  if (!data.eventBody) {
-    console.log(
-      "[CallSpoof] Ignored notification due to missing conversation body",
-      data
-    );
-    return;
-  }
-
-  if (data.eventBody.id !== conversationId) {
-    console.log(
-      "[CallSpoof] Ignored notification for another conversation",
-      data
-    );
-    return;
-  }
-
-  // check if participants exist
-  if (!data.eventBody.participants) {
-    console.log(
-      "[CallSpoof] Ignored notification due to missing conversation participants",
-      data
-    );
-    return;
-  }
-
-
-  // if we got here, that means we should proceed and ignore future notifications.
-  participantId0 = data.eventBody.participants[0].id;
-  conversationHandled = true;
-  await disconnectWebsocket();
-  await setAttributes();
-
-  // we made it! success!
-  var options = {
-    id: "callSpoofNotify",
-    type: "success",
-    timeout: 5,
-  };
-  callSpoofApp.alerting.showToastPopup(
-    "Call Spoof",
-    "Successfully simulated call.",
-    options
-  );
-}
-
-async function addSubscription() {
-  // subscribe to my conversations
-  return new Promise((resolve, reject) => {
-    notificationsApi
-      .putNotificationsChannelSubscriptions(channelId, [
-        `v2.users.${userId}.conversations.calls`,
-      ])
-      .then((data) => {
-        console.log("[CallSpoof] Subscribed to notifications");
-        resolve();
-      })
-      .catch((err) => {
-        alertFailure("Unable to subscribe to conversation notifications.");
-        console.log("[CallSpoof] Unable to set notification subscription", err);
-        reject(err);
-      });
-  });
-}
 
 // Section: Conversation control
 
 async function createConversation() {
   var body = {
-		phoneNumber:remoteNumber,
-		callFromQueueId:"19fe3246-f90d-4381-b048-c9884bef1c8f"
+		phoneNumber:"DialOut@localhost",
+		callFromQueueId:"19fe3246-f90d-4381-b048-c9884bef1c8f",
+	        uuiData:remoteNumber,
+	        callerId:"+15153770517"
   };
 
   return new Promise((resolve, reject) => {
@@ -364,32 +248,6 @@ async function createConversation() {
       .catch((err) => {
         alertFailure("Unable to create the conversation.");
         console.log("[CallSpoof] Unable to create conversation", err);
-        reject(err);
-      });
-  });
-}
-
-async function setAttributes() {
-  var body = {
-    attributes: {
-      Customer_Number: remoteNumber
-    },
-  };
-
-  return new Promise((resolve, reject) => {
-    conversationsApi
-      .patchConversationParticipantAttributes(
-        conversationId,
-        participantId0,
-        body
-      )
-      .then((data) => {
-        console.log("[CallSpoof] Set participant attributes", data);
-        resolve();
-      })
-      .catch((err) => {
-        alertFailure("Unable to set participant attributes.");
-        console.log("[CallSpoof] Unable to update participant attributes", err);
         reject(err);
       });
   });
