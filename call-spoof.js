@@ -4,7 +4,6 @@ const clientId = "37a8339d-90e6-441d-9cb1-06d3baa257e8";
 const redirectUri = "https://shubhamsinghania.github.io";
 const client = platformClient.ApiClient.instance;
 var conversationsApi = new platformClient.ConversationsApi();
-var notificationsApi = new platformClient.NotificationsApi();
 var apiInstance = new platformClient.ArchitectApi();
 var usersApi = new platformClient.UsersApi();
 
@@ -98,7 +97,6 @@ async function getUserId() {
 
 function placeCall() {
   remoteNumber = $("input[name=remoteNumber]").val();
-  conversationHandled = false;
 
   if (!remoteNumber) {
     alertFailure('A valid phone number must be entered in "My Number."');
@@ -120,7 +118,7 @@ function placeCall() {
     options
   );
 
-  conversationId = createConversation();
+  createConversation();
 }
 
 function callWorkflow() {
