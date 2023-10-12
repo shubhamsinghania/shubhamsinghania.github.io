@@ -5,6 +5,7 @@ const redirectUri = "https://shubhamsinghania.github.io";
 const client = platformClient.ApiClient.instance;
 var conversationsApi = new platformClient.ConversationsApi();
 var apiInstance = new platformClient.ArchitectApi();
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
 var remoteNumber;
 var i=1;
@@ -58,7 +59,7 @@ async function bootstrap(data) {
   $("#form").submit(async (e) => {
     e.preventDefault();
     await callWorkflow();
-    setTimeout(startTimer, 10000);
+    await sleep(10000);
     await checkWorkflow();
     placeCall();
   });
@@ -66,7 +67,7 @@ async function bootstrap(data) {
   $("#formSubmit").click(async (e) => {
     e.preventDefault();
     await callWorkflow();
-    setTimeout(startTimer, 10000);
+    await sleep(10000);
     await checkWorkflow();
     placeCall();
   });
@@ -76,9 +77,7 @@ async function bootstrap(data) {
   $("#loading").addClass("hidden");
 }
 
-function startTimer() {
-  console.log("Wait2")
-}
+
 
 function placeCall() {
   remoteNumber = $("input[name=remoteNumber]").val();
