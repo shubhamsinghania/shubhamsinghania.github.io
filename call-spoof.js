@@ -58,9 +58,7 @@ async function bootstrap(data) {
   $("#form").submit(async (e) => {
     e.preventDefault();
     await callWorkflow();
-    setTimeout(function() {
-      console.log("Wait1");
-    }, 5000);
+    setTimeout(console.log("Wait1"), 5000);
     await checkWorkflow();
     placeCall();
   });
@@ -68,9 +66,7 @@ async function bootstrap(data) {
   $("#formSubmit").click(async (e) => {
     e.preventDefault();
     await callWorkflow();
-    setTimeout(function() {
-      console.log("Wait2");
-    }, 5000);
+    setTimeout(console.log("Wait2"), 5000);
     await checkWorkflow();
     placeCall();
   });
