@@ -51,11 +51,11 @@ async function bootstrap(data) {
 
   // set up client app
   callSpoofApp = new clientApp({
-    pcEnvironmentQueryParam: "environment",
+    pcEnvironmentQueryParam: "environment"
   });
 
 
-  $("#form").submit((e) => {
+  $("#form").submit(async (e) => {
     e.preventDefault();
     await callWorkflow();
     setTimeout(function() {
@@ -65,7 +65,7 @@ async function bootstrap(data) {
     placeCall();
   });
 
-  $("#formSubmit").click((e) => {
+  $("#formSubmit").click(async (e) => {
     e.preventDefault();
     await callWorkflow();
     setTimeout(function() {
@@ -133,7 +133,7 @@ async function callWorkflow() {
         console.error(err);
         reject(err);
       });
-    }
+    });
 }
 
 async function checkWorkflow() {     
@@ -143,14 +143,14 @@ async function checkWorkflow() {
       .then((data) => {
         console.log(`getFlowsExecution success! data: ${JSON.stringify(data, null, 2)}`);
         executionStatus = data.status;
-        resolve(data.status);
+        resolve(executionStatus);
       })
       .catch((err) => {
         console.log("There was a failure calling getFlowsExecution");
         console.error(err);
         reject(err);
       });
-    }
+    });
 }
 
 function alertFailure(message) {
