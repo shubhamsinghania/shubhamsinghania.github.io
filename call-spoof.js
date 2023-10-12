@@ -59,9 +59,17 @@ async function bootstrap(data) {
   $("#form").submit(async (e) => {
     e.preventDefault();
     await callWorkflow();
-    await sleep(10000);
+    await sleep(3000);
     await checkWorkflow();
-    placeCall();
+
+    if (executionStatus!="COMPLETED") {
+      await sleep(4000);
+      placeCall();
+    }
+    else
+    {
+      placeCall();
+    }
   });
 
   $("#formSubmit").click(async (e) => {
@@ -69,7 +77,14 @@ async function bootstrap(data) {
     await callWorkflow();
     await sleep(10000);
     await checkWorkflow();
-    placeCall();
+    if (executionStatus!="COMPLETED") {
+      await sleep(4000);
+      placeCall();
+    }
+    else
+    {
+      placeCall();
+    }
   });
 
   // show the form
