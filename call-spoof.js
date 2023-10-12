@@ -64,6 +64,7 @@ async function bootstrap(data) {
 
     if (executionStatus!="COMPLETED") {
       await sleep(4000);
+      await checkWorkflow(); //JUST FOR TESTING
       placeCall();
     }
     else
@@ -75,10 +76,11 @@ async function bootstrap(data) {
   $("#formSubmit").click(async (e) => {
     e.preventDefault();
     await callWorkflow();
-    await sleep(10000);
+    await sleep(3000);
     await checkWorkflow();
     if (executionStatus!="COMPLETED") {
       await sleep(4000);
+      await checkWorkflow(); //JUST FOR TESTING
       placeCall();
     }
     else
