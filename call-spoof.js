@@ -58,7 +58,7 @@ async function bootstrap(data) {
   $("#form").submit(async (e) => {
     e.preventDefault();
     await callWorkflow();
-    setTimeout(console.log("Wait1"), 20000);
+    setTimeout(startTimer, 10000);
     await checkWorkflow();
     placeCall();
   });
@@ -66,7 +66,7 @@ async function bootstrap(data) {
   $("#formSubmit").click(async (e) => {
     e.preventDefault();
     await callWorkflow();
-    setTimeout(console.log("Wait2"), 20000);
+    setTimeout(startTimer, 10000);
     await checkWorkflow();
     placeCall();
   });
@@ -76,6 +76,9 @@ async function bootstrap(data) {
   $("#loading").addClass("hidden");
 }
 
+function startTimer() {
+  console.log("Wait2")
+}
 
 function placeCall() {
   remoteNumber = $("input[name=remoteNumber]").val();
