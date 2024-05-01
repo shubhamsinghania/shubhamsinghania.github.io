@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Get the Values from the Get Parameters in JavaScript</title>
+</head>
+<body>
+    <script>
+    // Sample URL
+    var urlString = window.location.href;
+
+    // Creating URL object for the given URL
+    var url = new URL(urlString);
+
+    // Retrieving query string values
+    var name = url.searchParams.get("name");
+    document.write(name + "<br>"); // Prints: john-clark
+
+    var age = url.searchParams.get("age");
+    document.write(age); // Prints: 24
+    </script>
+</body>
+</html>
