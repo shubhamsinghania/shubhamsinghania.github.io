@@ -1,0 +1,520 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+/* =========================================================
+   BASE
+   ========================================================= */
+body {
+    margin: 0;
+    font-family: Roboto, Arial, sans-serif;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #ffffff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #c6cee1;
+}
+
+.branding {
+    display: flex;
+    align-items: center;
+}
+
+.branding-logo img {
+    height: 38px;
+    margin-right: 8px;
+}
+
+.branding-text {
+    font-size: 18px;
+    margin-right: 12px;
+    color: #000;
+}
+
+.branding-icon {
+    background: linear-gradient(to right, #BADFEC, #CED2FC);
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.branding-icon img {
+    width: 24px;
+    height: 24px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 500;
+}
+
+#headerRight{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* =========================================================
+   REGION DISPLAY
+   ========================================================= */
+.region-label{
+    font-size: 14px;
+    color: #3844a3;
+    white-space: nowrap;
+    margin-right: 3px;
+}
+
+/* =========================================================
+   HEADER ACTION BUTTONS
+   ========================================================= */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+
+    padding: 4px 7px;
+    border-radius: 6px;
+
+    background: #e7e9f9;
+    border: 1px solid #e7e9f9;
+
+    color: #3844a3;
+    font-size: 14px;
+    font-weight: 750;
+
+    cursor: pointer;
+    white-space: nowrap;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.header-pill img,
+.header-pill svg {
+    width: 24px;
+    height: 24px;
+}
+
+.header-pill:hover {
+    background: #dfdef7;
+    border-color: #dfdef7;
+}
+
+.header-pill.active {
+    background: #d5def7;
+    border-color: #d5def7;
+    color: #3844a3;
+}
+.header-pill.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.header-pill:focus-visible {
+    outline: 2px solid #7f9cff;
+    outline-offset: 2px;
+}
+#settingsButton{
+    display: inline-flex;
+}
+
+/* =========================================================
+   APP CONTAINER
+   ========================================================= */
+.app-container {
+    display: none;
+}
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+.source-section,
+.upload-section {
+    margin: 40px;
+    padding: 20px;
+    border: 1px solid #c6cee1;
+    border-radius: 6px;
+    max-width: 720px;
+}
+
+.source-header,
+.upload-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+/* =========================================================
+   SOURCE SELECTION
+   ========================================================= */
+.source-selection-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-top: 10px;
+}
+
+.select-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 220px;
+}
+
+.select-container label {
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.select-container select {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.primary-button,
+.secondary-button,
+#uploadBtn {
+   background: #e7e9f9;
+    border: 1px solid #e7e9f9;
+    color: #3844a3;
+    font-size: 14px;
+    font-weight: 750;
+}
+
+
+.primary-button:hover,
+.secondary-button:hover,
+#uploadBtn:hover {
+    background-color: #dfdef7;
+}
+
+button:active {
+    background-color: #dfdef7;
+}
+
+.secondary-button {
+    padding: 8px 14px;
+    flex-shrink: 0;
+}
+/* =========================================================
+   FILE UPLOAD
+   ========================================================= */
+.file-count {
+    background: #dfdef7;
+    color: #3844a3;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.drop-zone {
+    margin-top: 15px;
+    padding: 30px;
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    text-align: center;
+    color: #777;
+}
+
+.drop-zone.dragover {
+    border-color: #3844a3;
+    background: #e7e9f9;
+    color: #3844a3;
+}
+
+.drop-zone a {
+    color: #3844a3;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.file-item {
+    display: grid;
+    grid-template-columns: 1fr auto; /* filename | action */
+    align-items: center;
+    padding: 4px 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    border-bottom: 1px solid #c6cee1;
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.file-item strong {
+    font-weight: 500;
+}
+.file-item span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.file-item.secondary-button {
+    font-size: 12px;
+    padding: 3px 6px;
+    background: none;
+    border: none;
+    color: #3844a3;
+    cursor: pointer;
+}
+
+.file-item .secondary-button img {
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+}
+/* Hover row highlight (subtle) */
+.file-item:hover {
+    background-color: #f7f9fd;
+}
+
+.upload-actions {
+    margin-top: 20px;
+}
+
+#uploadBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* =========================================================
+   UPLOAD RESULTS
+   ========================================================= */
+#uploadResultsList{
+    background-color: #e7e9f9;
+    border: 1px solid #c6cee1;
+    border-radius: 6px;
+    padding: 8px;
+}
+.upload-results {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 6px;
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    background: #aaaaaa;
+}
+.upload-result-item {
+    padding: 4px 6px;
+    border: none;
+}
+
+.upload-results.success {
+    display: block;
+    background-color: transparent;
+    border: none;
+    color: inherit;
+    font-size: 12px;
+}
+.upload-result-item.result-success {
+    color: #155724;
+}
+.checkmark {
+    color: #28a745;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.upload-results.error {
+    display: block;
+    background-color: transparent;
+    border: none;
+    color: inherit;
+    font-size: 12px;
+}
+.upload-result-item.result-error {
+    color: #c82333;
+}
+
+.error {
+    color: #dc3545;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.upload-results.info {
+    display: block;
+    background-color: transparent;
+    border: none;
+    color: inherit;
+    font-size: 12px;
+}
+.upload-result-item.result-info {
+    color: #FD7E14;
+}
+
+.info {
+    color: #FD7E14;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+/* =========================================================
+   SETTINGS MODAL
+   ========================================================= */
+.settings-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background-color: rgba(0,0,0,0.4);
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-modal-content {
+    background-color: #fff;
+    padding: 16px;
+    width: 400px;
+    max-height: 220px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.close {
+    float: right;
+    font-size: 24px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.settings-modal-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#settingsModal input {
+    width: 90%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+}
+
+/* =========================================================
+   NEW SOURCE MODAL
+   ========================================================= */
+.src-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background-color: rgba(0,0,0,0.4);
+    align-items: center;
+    justify-content: center;
+}
+
+.src-modal-content {
+    background-color: #fff;
+    padding: 16px;
+    width: 400px;
+    max-height: 220px;
+    border-radius: 8px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.close {
+    float: right;
+    font-size: 24px;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.src-modal-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+#addSourceModal input {
+    width: 90%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+}
+
+/* =========================================================
+   SPINNER
+   ========================================================= */
+#spinnerModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.spinner-text {
+    margin-top: 1rem;
+    color: #fff;
+    font-size: 1.2rem;
+}
