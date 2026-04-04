@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<!-- saved from url=(0054)https://gkf-ingester-294685030958.us-central1.run.app/ -->
+<html lang="en" xmlns="http://www.w3.org/1999/html"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <link rel="stylesheet" href="/css/custom.css">
+    <link rel="icon" href="https://www.genesys.com/wp-content/themes/genesys-kraken/logo/favicon32.png" sizes="32x32" type="image/png">
+    <title>Genesys - Knowledge Fabric</title>
+</head>
+<body>
+
+<!-- ================= SHARED HEADER ================= -->
+<header>
+    <div class="branding">
+        <div class="branding-logo">
+            <img src="/images/adaptive-g-orange.png" alt="Adaptive G Logo">
+        </div>
+        <span class="branding-text">AI Studio</span>
+        <div class="branding-icon">
+            <img src="/images/sparkles-solid.svg" alt="Sparkles Icon">
+        </div>
+    </div>
+
+    <div class="page-title">Knowledge Fabric - File Ingestion</div>
+
+    <div id="headerRight">
+        <span id="regionLabelDisplay" class="region-label">Region: Not Set</span>
+        <button id="settingsButton" class="header-pill">
+            <img src="/images/gear-blue.png" style="width:20px;height:20px;vertical-align:middle;margin-right:3px">
+            <span>Settings</span>
+        </button>
+        <button id="authButton" class="header-pill disabled" disabled="" title="Please configure Region and Client ID in Settings"><img src="/images/arrow-right-to-bracket-blue.png" alt="Login" style="width:20px;height:20px;vertical-align:middle;margin-right:3px"><span>Login</span></button>
+    </div>
+</header>
+
+
+<!-- Modal for Settings -->
+<div id="settingsModal" class="settings-modal" style="display: none;">
+    <div class="settings-modal-content">
+        <span class="close" id="closeSettingsModal">×</span>
+        <h3>Configure Settings</h3>
+        <label for="regionSelect">Region:</label>
+        <select id="regionSelect" style="width: 200px;">
+            <option value="inintca.com">Test (TCA)</option>
+            <option value="mypurecloud.com">US East (N. Virginia)</option>
+            <option value="use2.us-gov-pure.cloud">US East 2 (Ohio)</option>
+            <option value="usw2.pure.cloud">US West 2 (Oregon)</option>
+            <option value="cac1.pure.cloud ">Canada (Central)</option>
+            <option value="sae1.pure.cloud">South America (São Paulo)</option>
+            <option value="mxc1.pure.cloud">Mexico (Central)</option>
+            <option value="mypurecloud.ie">Europe (Ireland)</option>
+            <option value="mypurecloud.de">Europe (Frankfurt)</option>
+            <option value="euw2.pure.cloud">Europe (London)</option>
+            <option value="euc2.pure.cloud">Europe (Zurich)</option>
+            <option value="mec1.pure.cloud">Middle East (UAE)</option>
+            <option value="aps1.pure.cloud">Asia Pacific (Mumbai)</option>
+            <option value="mypurecloud.jp">Asia Pacific (Tokyo)</option>
+            <option value="apne2.pure.cloud">Asia Pacific (Seoul)</option>
+            <option value="apne3.pure.cloud">Asia Pacific (Osaka)</option>
+            <option value="apse1.pure.cloud">Asia Pacific (Singapore)</option>
+            <option value="mypurecloud.com.au">Asia Pacific (Sydney)</option>
+        </select>
+        <br><br>
+        <input type="text" id="clientId" placeholder="Enter Client Id">
+        <div class="settings-modal-actions">
+            <button id="saveSettingsBtn" class="secondary-button">
+                <img src="/images/save-blue.png" style="width:20px;height:20px;vertical-align:middle;margin-right:3px">
+                <span>Save Settings</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div class="app-container" id="appContainer" style="display: none;">
+
+    <!-- Knowledge Source Selection -->
+    <section class="source-section">
+        <div class="source-header">
+            <h2>Knowledge Source</h2>
+        </div>
+
+        <div class="source-selection-wrapper">
+            <div class="select-container">
+                <label for="knowledgeSourceSelect">Select a Knowledge Source for Upload:</label>
+                <select id="knowledgeSourceSelect" name="knowledgeSourceId" required="">
+                    <option value="">Loading...</option>
+                </select>
+            </div>
+            <button id="addSourceBtn" class="secondary-button">
+                <img src="/images/plus-circle-blue.png" style="width:20px;height:20px;vertical-align:middle;margin-right:3px">
+                <span>Add Source</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Modal for adding new source -->
+    <div id="addSourceModal" class="src-modal">
+        <div class="src-modal-content">
+            <span class="close" id="closeAddSourceModal">×</span>
+            <h3>Add New Knowledge Source</h3>
+            <input type="text" id="newSourceName" placeholder="Enter source name">
+            <div class="src-modal-actions">
+                <button id="confirmAddSourceBtn" class="secondary-button">
+                    <img src="/images/plus-blue.png" style="width:20px;height:20px;vertical-align:middle;margin-right:3px">
+                    <span>Add</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Upload Section -->
+    <section class="upload-section">
+        <div class="upload-header">
+            <h2>Upload Files</h2>
+            <span class="file-count" id="fileCount">0 files</span>
+        </div>
+
+        <input type="file" id="fileInput" multiple="" hidden="">
+
+        <div class="drop-zone" id="dropZone">
+            Drag &amp; drop files here or
+            <a id="browseFilesLink">browse files</a>
+        </div>
+
+        <div id="fileList"><p>No files selected.</p></div>
+
+        <div class="upload-actions">
+            <button id="uploadBtn" class="secondary-button" disabled="">
+                <img src="/images/cloud-upload-blue.png" style="width:20px;height:20px;vertical-align:middle;margin-right:3px">
+                <span>Upload</span>
+            </button>
+        </div>
+
+        <div class="upload-results" id="uploadResults">
+            <div id="uploadResultsList"></div>
+        </div>
+    </section>
+
+</div>
+
+<!-- Spinner Modal -->
+<div id="spinnerModal" style="display: none;">
+    <div style="text-align: center;">
+        <div class="spinner"></div>
+        <div class="spinner-text">Uploading files, please wait...</div>
+    </div>
+</div>
+
+<script type="text/javascript" charset="utf-8" src="/js/custom.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>
