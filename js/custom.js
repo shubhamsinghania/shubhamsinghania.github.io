@@ -3,6 +3,7 @@ const redirectUri = window.location.origin + window.location.pathname;
 const appContainer = document.getElementById('appContainer');
 const spinnerModal = document.getElementById('spinnerModal');
 let genesysBaseUrl = null;
+
 function showSpinner() { spinnerModal.style.display = 'flex'; }
 function hideSpinner() { spinnerModal.style.display = 'none'; }
 hideSpinner();
@@ -13,11 +14,10 @@ const settingsModal = document.getElementById('settingsModal');
 const closeSettingsModal = document.getElementById('closeSettingsModal');
 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
 
-
 settingsButton.onclick = () => { settingsModal.style.display = 'flex'; };
 closeSettingsModal.onclick = () => { settingsModal.style.display = 'none'; };
-window.onclick = e => { if (e.target === settingsModal) settingsModal.style.display = 'none'; };
-function displayRegion(){
+
+function displayRegion() {
     const regionLabelDisplay = document.getElementById('regionLabelDisplay');
     const envLabel = localStorage.getItem('envLabel');
     regionLabelDisplay.textContent = envLabel
@@ -25,24 +25,18 @@ function displayRegion(){
         : `Region: Not Set`;
 }
 displayRegion();
+
 saveSettingsBtn.onclick = async () => {
     const select = document.getElementById('regionSelect');
     const option = select.options[select.selectedIndex];
 
-    localStorage.setItem(
-        'envValue',
-        option.value
-    );
-     localStorage.setItem(
-        'envLabel',
-        option.text
-    );
-    localStorage.setItem(
-        'clientId',
-        document.getElementById("clientId").value.trim()
-    );
+    localStorage.setItem('envValue', option.value);
+    localStorage.setItem('envLabel', option.text);
+    localStorage.setItem('clientId', document.getElementById('clientId').value.trim());
+
     settingsModal.style.display = 'none';
     displayRegion();
+    setGenesysBaseUrl();
     renderAuthButton();
 };
 
@@ -57,7 +51,7 @@ if (window.location.hash.includes('access_token')) {
         if (expiresIn) {
             sessionStorage.setItem(
                 'token_expiry',
-                Date.now() + parseInt(expiresIn, 10) * 1000
+                String(Date.now() + parseInt(expiresIn, 10) * 1000)
             );
         }
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -65,13 +59,14 @@ if (window.location.hash.includes('access_token')) {
 }
 
 const token = sessionStorage.getItem('access_token');
+
 function isAuthenticated() {
     const token = sessionStorage.getItem('access_token');
     const expiry = sessionStorage.getItem('token_expiry');
-    return token && (!expiry || Date.now() < parseInt(expiry, 10));
+    return !!(token && (!expiry || Date.now() < parseInt(expiry, 10)));
 }
 
-function setGenesysBaseUrl(){
+function setGenesysBaseUrl() {
     const envValue = localStorage.getItem('envValue');
     if (!envValue) {
         genesysBaseUrl = null;
@@ -83,23 +78,28 @@ function setGenesysBaseUrl(){
 function login() {
     const env = localStorage.getItem('envValue');
     const clientId = localStorage.getItem('clientId');
-    if( !clientId || !env ) {
-        alert("Use settings to configure the region and client Id");
+
+    if (!clientId || !env) {
+        alert('Use settings to configure the region and client Id');
         return;
     }
+
     const authUrl = `https://login.${env}/oauth/authorize` +
         `?response_type=token` +
         `&client_id=${encodeURIComponent(clientId)}` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
         `&scope=architect%20users%20notifications`;
+
     window.location.href = authUrl;
 }
 
 function logout() {
     const clientId = localStorage.getItem('clientId');
     const env = localStorage.getItem('envValue');
+
     sessionStorage.removeItem('access_token');
     sessionStorage.removeItem('token_expiry');
+
     const returnUrl = encodeURIComponent(window.location.origin + window.location.pathname);
     window.location.href = `https://login.${env}/logout?client_id=${clientId}&redirect_uri=${returnUrl}`;
 }
@@ -109,7 +109,7 @@ const authButton = document.getElementById('authButton');
 function renderAuthButton() {
     const envValue = localStorage.getItem('envValue');
     const clientId = localStorage.getItem('clientId');
-    const isConfigured = !!envValue || !!clientId;
+    const isConfigured = !!envValue && !!clientId;
 
     if (isAuthenticated()) {
         authButton.innerHTML = `<img src="images/arrow-right-from-bracket-blue.png" alt="Logout" style="width:20px;height:20px;vertical-align:middle;margin-right:3px"><span>Logout</span>`;
@@ -122,15 +122,13 @@ function renderAuthButton() {
         authButton.onclick = login;
         appContainer.style.display = 'none';
     }
-    authButton.disabled = !isConfigured;
 
+    authButton.disabled = !isConfigured;
     authButton.title = isConfigured
-        ? 'Logout'
+        ? (isAuthenticated() ? 'Logout' : 'Login')
         : 'Please configure Region and Client ID in Settings';
 
-    authButton.className = isConfigured
-        ? 'header-pill'
-        : 'header-pill disabled';
+    authButton.className = isConfigured ? 'header-pill' : 'header-pill disabled';
 }
 renderAuthButton();
 
@@ -138,27 +136,34 @@ renderAuthButton();
 async function getKnowledgeSources() {
     const token = sessionStorage.getItem('access_token');
     if (!token) throw new Error('Not authenticated');
+    if (!genesysBaseUrl) throw new Error('Region is not configured');
 
     const response = await fetch(`${genesysBaseUrl}/v2/knowledge/sources`, {
         method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
     });
 
     if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Fetch knowledge source failed: ${response.status} ${errorText}`);
     }
+
     return response.json();
 }
 
 async function loadKnowledgeSources() {
     try {
         const entities = await getKnowledgeSources();
-        const sources = entities.entities;
+        const sources = entities.entities || [];
         const select = document.getElementById('knowledgeSourceSelect');
+
         select.innerHTML = '<option value="">Select Knowledge Source</option>';
+
         sources.forEach(({ id, name, type }) => {
-            if (type === "FileUpload") {
+            if (type === 'FileUpload') {
                 const option = document.createElement('option');
                 option.value = id;
                 option.textContent = name;
@@ -175,10 +180,14 @@ async function loadKnowledgeSources() {
 async function createKnowledgeSource(name) {
     const token = sessionStorage.getItem('access_token');
     if (!token) throw new Error('Not authenticated');
+    if (!genesysBaseUrl) throw new Error('Region is not configured');
 
     const response = await fetch(`${genesysBaseUrl}/v2/knowledge/sources`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ name, type: 'FileUpload', triggerType: 'Manual' })
     });
 
@@ -186,6 +195,7 @@ async function createKnowledgeSource(name) {
         const errorText = await response.text();
         throw new Error(`Create source failed: ${response.status} ${errorText}`);
     }
+
     return response.json();
 }
 
@@ -203,9 +213,16 @@ let selectedFiles = [];
 
 browseFilesLink.onclick = () => fileInput.click();
 fileInput.onchange = e => handleFiles(e.target.files);
-dropZone.ondragover = e => { e.preventDefault(); dropZone.classList.add('dragover'); };
+dropZone.ondragover = e => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+};
 dropZone.ondragleave = () => dropZone.classList.remove('dragover');
-dropZone.ondrop = e => { e.preventDefault(); dropZone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); };
+dropZone.ondrop = e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+};
 
 function handleFiles(files) {
     Array.from(files).forEach(file => {
@@ -217,7 +234,12 @@ function handleFiles(files) {
     renderFiles();
 }
 
-function removeFile(index) { selectedFiles.splice(index, 1); renderFiles(); }
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    renderFiles();
+}
+
+window.removeFile = removeFile;
 
 function renderFiles() {
     fileCount.textContent = `${selectedFiles.length} files`;
@@ -231,7 +253,7 @@ function renderFiles() {
     fileListDiv.innerHTML = selectedFiles.map((file, i) => `
         <div class="file-item">
             <span><strong>${file.name}</strong></span>
-            <button onclick="removeFile(${i})" >
+            <button onclick="removeFile(${i})">
                 <img src="/images/minus-circle-red.png" style="width:20px;height:20px;vertical-align:middle;margin-right:3px">Remove
             </button>
         </div>
@@ -240,14 +262,28 @@ function renderFiles() {
 
 function normalizeFileName(fileName) {
     const parts = fileName.split('.');
+
+    if (parts.length === 1) {
+        return fileName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/_+/g, '_')
+            .replace(/^_|_$/g, '');
+    }
+
     const extension = parts.pop();
     const baseName = parts.join('.');
-    return baseName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') + '.' + extension.toLowerCase();
+
+    return baseName.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '') + '.' + extension.toLowerCase();
 }
 
 /* ================= UPLOAD RESULT UTILITY ================= */
 function addUploadResult(fileName, status, message) {
-    uploadResults.classList.add('success'); // show container
+    uploadResults.classList.add('success');
+
     const div = document.createElement('div');
     let icon = '';
     let rowClass = '';
@@ -280,26 +316,35 @@ function addUploadResult(fileName, status, message) {
 async function createSynchronizationSession(sourceId) {
     const token = sessionStorage.getItem('access_token');
     if (!token) throw new Error('Not authenticated');
+    if (!genesysBaseUrl) throw new Error('Region is not configured');
 
     const response = await fetch(`${genesysBaseUrl}/v2/knowledge/sources/${sourceId}/synchronizations`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
     });
 
     if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Create synchronization failed: ${response.status} ${errorText}`);
     }
+
     return response.json();
 }
 
 async function requestPresignedUploadUrl(sourceId, synchronizationId, fileName) {
     const token = sessionStorage.getItem('access_token');
     if (!token) throw new Error('Not authenticated');
+    if (!genesysBaseUrl) throw new Error('Region is not configured');
 
     const response = await fetch(`${genesysBaseUrl}/v2/knowledge/sources/${sourceId}/synchronizations/${synchronizationId}/uploads`, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ fileName })
     });
 
@@ -307,30 +352,80 @@ async function requestPresignedUploadUrl(sourceId, synchronizationId, fileName) 
         const errorText = await response.text();
         throw new Error(`Presigned URL request failed: ${response.status} ${errorText}`);
     }
+
     return response.json();
 }
 
 async function completeSynchronizationSession(sourceId, syncId) {
     const token = sessionStorage.getItem('access_token');
     if (!token) throw new Error('Not authenticated');
+    if (!genesysBaseUrl) throw new Error('Region is not configured');
 
     const response = await fetch(`${genesysBaseUrl}/v2/knowledge/sources/${sourceId}/synchronizations/${syncId}`, {
         method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: "Completed" })
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ status: 'Completed' })
     });
 
     if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Complete synchronization failed: ${response.status} ${errorText}`);
     }
+
     return response.json();
+}
+
+/* ================= PRESIGNED POST HELPERS ================= */
+function extractPresignedPost(uploadInfo) {
+    if (uploadInfo?.url && uploadInfo?.fields) {
+        return { url: uploadInfo.url, fields: uploadInfo.fields };
+    }
+
+    if (uploadInfo?.uploadUrl && uploadInfo?.fields) {
+        return { url: uploadInfo.uploadUrl, fields: uploadInfo.fields };
+    }
+
+    if (uploadInfo?.post?.url && uploadInfo?.post?.fields) {
+        return { url: uploadInfo.post.url, fields: uploadInfo.post.fields };
+    }
+
+    throw new Error('Unexpected presigned POST response format');
+}
+
+async function uploadFileToPresignedPost(uploadInfo, file, safeFileName) {
+    const { url, fields } = extractPresignedPost(uploadInfo);
+
+    const formData = new FormData();
+
+    Object.entries(fields).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+
+    formData.append('file', file, safeFileName);
+
+    const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`S3 upload failed: ${response.status} ${errText}`);
+    }
+
+    return response;
 }
 
 /* ================= HANDLE UPLOAD ================= */
 uploadBtn.onclick = async () => {
     const knowledgeSourceId = document.getElementById('knowledgeSourceSelect').value;
-    if (!knowledgeSourceId) { alert('No knowledge source selected.'); return; }
+    if (!knowledgeSourceId) {
+        alert('No knowledge source selected.');
+        return;
+    }
 
     showSpinner();
     uploadBtn.disabled = true;
@@ -344,24 +439,23 @@ uploadBtn.onclick = async () => {
         for (const file of selectedFiles) {
             const safeFileName = normalizeFileName(file.name);
 
-            // Get presigned URL
-            const uploadInfo = await requestPresignedUploadUrl(knowledgeSourceId, sync.id, safeFileName);
-
-            // Upload file
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('uploadInfo', JSON.stringify(uploadInfo));
-
             try {
-                const response = await fetch('/upload', { method: 'PUT', body: formData });
-                if (!response.ok) {
-                    const err = await response.text();
-                    addUploadResult(file.name, 'error', `Request failed: ${response.status} - ${err}`);
-                    continue;
-                }
+                addUploadResult(file.name, 'info', 'Requesting upload URL...');
+                const uploadInfo = await requestPresignedUploadUrl(
+                    knowledgeSourceId,
+                    sync.id,
+                    safeFileName
+                );
+
+                console.log('Presigned POST response:', uploadInfo);
+
+                addUploadResult(file.name, 'info', 'Uploading to storage...');
+                await uploadFileToPresignedPost(uploadInfo, file, safeFileName);
+
                 addUploadResult(file.name, 'success', 'File uploaded successfully');
             } catch (err) {
-                addUploadResult(file.name, 'error', `Upload failed: ${err}`);
+                console.error('Upload failed for file:', file.name, err);
+                addUploadResult(file.name, 'error', err.message || String(err));
             }
         }
 
@@ -372,10 +466,11 @@ uploadBtn.onclick = async () => {
         renderFiles();
     } catch (err) {
         console.error(err);
-        addUploadResult('Error', 'error', err.message || err);
+        addUploadResult('Error', 'error', err.message || String(err));
         alert('File upload failed. See results for details.');
     } finally {
         hideSpinner();
+        uploadBtn.disabled = selectedFiles.length === 0;
     }
 };
 
@@ -388,11 +483,14 @@ const newSourceNameInput = document.getElementById('newSourceName');
 
 addSourceBtn.onclick = () => { addSourceModal.style.display = 'flex'; };
 closeAddSourceModal.onclick = () => { addSourceModal.style.display = 'none'; };
-window.onclick = e => { if (e.target === addSourceModal) addSourceModal.style.display = 'none'; };
 
 confirmAddSourceBtn.onclick = async () => {
     const name = newSourceNameInput.value.trim();
-    if (!name) { alert('Please enter a name'); return; }
+    if (!name) {
+        alert('Please enter a name');
+        return;
+    }
+
     try {
         const newSource = await createKnowledgeSource(name);
         addUploadResult(newSource.name, 'success', 'Knowledge Source created successfully');
@@ -400,45 +498,20 @@ confirmAddSourceBtn.onclick = async () => {
         addSourceModal.style.display = 'none';
         newSourceNameInput.value = '';
     } catch (err) {
-        alert(err);
+        alert(err.message || String(err));
         console.error(err);
-        addUploadResult('Create Source', 'error', err.message || err);
+        addUploadResult('Create Source', 'error', err.message || String(err));
         addSourceModal.style.display = 'none';
     }
 };
 
+/* ================= GLOBAL MODAL CLOSE ================= */
+window.addEventListener('click', e => {
+    if (e.target === settingsModal) settingsModal.style.display = 'none';
+    if (e.target === addSourceModal) addSourceModal.style.display = 'none';
+});
+
 /* ================= INITIALIZE ================= */
 renderFiles();
 setGenesysBaseUrl();
-if (token) loadKnowledgeSources();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if (isAuthenticated()) loadKnowledgeSources();
