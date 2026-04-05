@@ -353,7 +353,7 @@ uploadBtn.onclick = async () => {
             formData.append('uploadInfo', JSON.stringify(uploadInfo));
 
             try {
-                const response = await fetch('/upload', { method: 'POST', body: formData });
+                const response = await fetch('/upload', { method: 'PUT', body: formData });
                 if (!response.ok) {
                     const err = await response.text();
                     addUploadResult(file.name, 'error', `Request failed: ${response.status} - ${err}`);
