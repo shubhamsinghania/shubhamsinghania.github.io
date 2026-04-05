@@ -4,8 +4,14 @@ const appContainer = document.getElementById('appContainer');
 const spinnerModal = document.getElementById('spinnerModal');
 let genesysBaseUrl = null;
 
-function showSpinner() { spinnerModal.style.display = 'flex'; }
-function hideSpinner() { spinnerModal.style.display = 'none'; }
+function showSpinner() {
+    spinnerModal.style.display = 'flex';
+}
+
+function hideSpinner() {
+    spinnerModal.style.display = 'none';
+}
+
 hideSpinner();
 
 /* ================= SETTINGS MODAL LOGIC ================= */
@@ -14,8 +20,13 @@ const settingsModal = document.getElementById('settingsModal');
 const closeSettingsModal = document.getElementById('closeSettingsModal');
 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
 
-settingsButton.onclick = () => { settingsModal.style.display = 'flex'; };
-closeSettingsModal.onclick = () => { settingsModal.style.display = 'none'; };
+settingsButton.onclick = () => {
+    settingsModal.style.display = 'flex';
+};
+
+closeSettingsModal.onclick = () => {
+    settingsModal.style.display = 'none';
+};
 
 function displayRegion() {
     const regionLabelDisplay = document.getElementById('regionLabelDisplay');
@@ -24,6 +35,7 @@ function displayRegion() {
         ? `Region: ${envLabel}`
         : `Region: Not Set`;
 }
+
 displayRegion();
 
 saveSettingsBtn.onclick = async () => {
@@ -43,22 +55,22 @@ saveSettingsBtn.onclick = async () => {
 /* ================= HANDLE CALLBACK ================= */
 if (window.location.hash.includes('access_token')) {
     const params = new URLSearchParams(window.location.hash.substring(1));
-    const token = params.get('access_token');
+    const tokenFromHash = params.get('access_token');
     const expiresIn = params.get('expires_in');
 
-    if (token) {
-        sessionStorage.setItem('access_token', token);
+    if (tokenFromHash) {
+        sessionStorage.setItem('access_token', tokenFromHash);
+
         if (expiresIn) {
             sessionStorage.setItem(
                 'token_expiry',
                 String(Date.now() + parseInt(expiresIn, 10) * 1000)
             );
         }
+
         window.history.replaceState({}, document.title, window.location.pathname);
     }
 }
-
-const token = sessionStorage.getItem('access_token');
 
 function isAuthenticated() {
     const token = sessionStorage.getItem('access_token');
@@ -84,7 +96,8 @@ function login() {
         return;
     }
 
-    const authUrl = `https://login.${env}/oauth/authorize` +
+    const authUrl =
+        `https://login.${env}/oauth/authorize` +
         `?response_type=token` +
         `&client_id=${encodeURIComponent(clientId)}` +
         `&redirect_uri=${encodeURIComponent(redirectUri)}` +
@@ -130,6 +143,7 @@ function renderAuthButton() {
 
     authButton.className = isConfigured ? 'header-pill' : 'header-pill disabled';
 }
+
 renderAuthButton();
 
 /* ================= SOURCE LOGIC ================= */
@@ -188,7 +202,11 @@ async function createKnowledgeSource(name) {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ name, type: 'FileUpload', triggerType: 'Manual' })
+        body: JSON.stringify({
+            name,
+            type: 'FileUpload',
+            triggerType: 'Manual'
+        })
     });
 
     if (!response.ok) {
@@ -212,12 +230,20 @@ const uploadResults = document.getElementById('uploadResults');
 let selectedFiles = [];
 
 browseFilesLink.onclick = () => fileInput.click();
-fileInput.onchange = e => handleFiles(e.target.files);
+
+fileInput.onchange = e => {
+    handleFiles(e.target.files);
+};
+
 dropZone.ondragover = e => {
     e.preventDefault();
     dropZone.classList.add('dragover');
 };
-dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+
+dropZone.ondragleave = () => {
+    dropZone.classList.remove('dragover');
+};
+
 dropZone.ondrop = e => {
     e.preventDefault();
     dropZone.classList.remove('dragover');
@@ -230,6 +256,7 @@ function handleFiles(files) {
             selectedFiles.push(file);
         }
     });
+
     fileInput.value = '';
     renderFiles();
 }
@@ -274,10 +301,15 @@ function normalizeFileName(fileName) {
     const extension = parts.pop();
     const baseName = parts.join('.');
 
-    return baseName.toLowerCase()
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/_+/g, '_')
-        .replace(/^_|_$/g, '') + '.' + extension.toLowerCase();
+    return (
+        baseName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '_')
+            .replace(/_+/g, '_')
+            .replace(/^_|_$/g, '') +
+        '.' +
+        extension.toLowerCase()
+    );
 }
 
 /* ================= UPLOAD RESULT UTILITY ================= */
@@ -309,6 +341,7 @@ function addUploadResult(fileName, status, message) {
             <span><strong>${fileName}</strong>: ${message}</span>
         </div>
     `;
+
     uploadResultsList.appendChild(div);
 }
 
@@ -378,42 +411,34 @@ async function completeSynchronizationSession(sourceId, syncId) {
     return response.json();
 }
 
-/* ================= PRESIGNED POST HELPERS ================= */
-function extractPresignedPost(uploadInfo) {
-    if (uploadInfo?.url && uploadInfo?.fields) {
-        return { url: uploadInfo.url, fields: uploadInfo.fields };
+/* ================= PRESIGNED URL UPLOAD HELPERS ================= */
+function extractPresignedUpload(uploadInfo) {
+    if (!uploadInfo || typeof uploadInfo !== 'object') {
+        throw new Error('Presigned upload response is empty or invalid');
     }
 
-    if (uploadInfo?.uploadUrl && uploadInfo?.fields) {
-        return { url: uploadInfo.uploadUrl, fields: uploadInfo.fields };
+    if (!uploadInfo.url) {
+        throw new Error(`Upload URL missing in response: ${JSON.stringify(uploadInfo)}`);
     }
 
-    if (uploadInfo?.post?.url && uploadInfo?.post?.fields) {
-        return { url: uploadInfo.post.url, fields: uploadInfo.post.fields };
-    }
-
-    throw new Error('Unexpected presigned POST response format');
+    return {
+        url: uploadInfo.url,
+        headers: uploadInfo.headers || {}
+    };
 }
 
-async function uploadFileToPresignedPost(uploadInfo, file, safeFileName) {
-    const { url, fields } = extractPresignedPost(uploadInfo);
-
-    const formData = new FormData();
-
-    Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
-
-    formData.append('file', file, safeFileName);
+async function uploadFileToPresignedUrl(uploadInfo, file) {
+    const { url, headers } = extractPresignedUpload(uploadInfo);
 
     const response = await fetch(url, {
-        method: 'POST',
-        body: formData
+        method: 'PUT',
+        headers,
+        body: file
     });
 
     if (!response.ok) {
         const errText = await response.text();
-        throw new Error(`S3 upload failed: ${response.status} ${errText}`);
+        throw new Error(`Storage upload failed: ${response.status} ${errText}`);
     }
 
     return response;
@@ -422,6 +447,7 @@ async function uploadFileToPresignedPost(uploadInfo, file, safeFileName) {
 /* ================= HANDLE UPLOAD ================= */
 uploadBtn.onclick = async () => {
     const knowledgeSourceId = document.getElementById('knowledgeSourceSelect').value;
+
     if (!knowledgeSourceId) {
         alert('No knowledge source selected.');
         return;
@@ -441,16 +467,18 @@ uploadBtn.onclick = async () => {
 
             try {
                 addUploadResult(file.name, 'info', 'Requesting upload URL...');
+
                 const uploadInfo = await requestPresignedUploadUrl(
                     knowledgeSourceId,
                     sync.id,
                     safeFileName
                 );
 
-                console.log('Presigned POST response:', uploadInfo);
+                console.log('Upload response from Genesys:', JSON.stringify(uploadInfo, null, 2));
 
                 addUploadResult(file.name, 'info', 'Uploading to storage...');
-                await uploadFileToPresignedPost(uploadInfo, file, safeFileName);
+
+                await uploadFileToPresignedUrl(uploadInfo, file);
 
                 addUploadResult(file.name, 'success', 'File uploaded successfully');
             } catch (err) {
@@ -481,11 +509,17 @@ const closeAddSourceModal = document.getElementById('closeAddSourceModal');
 const confirmAddSourceBtn = document.getElementById('confirmAddSourceBtn');
 const newSourceNameInput = document.getElementById('newSourceName');
 
-addSourceBtn.onclick = () => { addSourceModal.style.display = 'flex'; };
-closeAddSourceModal.onclick = () => { addSourceModal.style.display = 'none'; };
+addSourceBtn.onclick = () => {
+    addSourceModal.style.display = 'flex';
+};
+
+closeAddSourceModal.onclick = () => {
+    addSourceModal.style.display = 'none';
+};
 
 confirmAddSourceBtn.onclick = async () => {
     const name = newSourceNameInput.value.trim();
+
     if (!name) {
         alert('Please enter a name');
         return;
@@ -507,11 +541,19 @@ confirmAddSourceBtn.onclick = async () => {
 
 /* ================= GLOBAL MODAL CLOSE ================= */
 window.addEventListener('click', e => {
-    if (e.target === settingsModal) settingsModal.style.display = 'none';
-    if (e.target === addSourceModal) addSourceModal.style.display = 'none';
+    if (e.target === settingsModal) {
+        settingsModal.style.display = 'none';
+    }
+
+    if (e.target === addSourceModal) {
+        addSourceModal.style.display = 'none';
+    }
 });
 
 /* ================= INITIALIZE ================= */
 renderFiles();
 setGenesysBaseUrl();
-if (isAuthenticated()) loadKnowledgeSources();
+
+if (isAuthenticated()) {
+    loadKnowledgeSources();
+}
